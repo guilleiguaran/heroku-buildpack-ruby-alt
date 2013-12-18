@@ -61,9 +61,10 @@ function install_ruby {
 function install_gems {
   PATH=$BUILD_DIR/ruby/bin:$PATH
   cd $BUILD_DIR
+  echo "install: --no-ri --no-rdoc --env-shebang" > .gemrc
 
   echo "-----> Install dep and gs"
-  gem install dep gs --env-shebang | indent
+  gem install dep gs --config-file .gemrc | indent
 
   echo "-----> Creating gemset"
   gs init
