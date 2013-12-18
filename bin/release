@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cat << EOF
+---
+config_vars:
+  PATH: /.gs/bin:bin:/usr/bin:/bin
+  RACK_ENV: production
+EOF

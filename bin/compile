@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+set -e
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+BASE_URL="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby"
+DEFAULT_RUBY_VERSION="2.0.0-p353"
+
+echo $BUILD_DIR
+echo $CACHE_DIR
+
+
+function indent {
+  sed -u 's/^/       /'
+}
+
+function download_yaml {
+  tmpdir=.libyaml
+  mkdir -p $tmpdir
+  yaml_tar="$BASE_URL/libyaml-0.1.4.tgz"
+  curl $yaml_tar -s -o - | tar xzf - -C $tmpdir/
+
+  yaml_include_path="$tmpdir/include"
+  yaml_lib_path="$tmpdir/lib"
+
+  CPATH=$yaml_include_path:$CPATH
+  CPPATH=$yaml_include_path:$CPPATH
+  LIBRARY_PATH=$yaml_lib_path:$LIBRARY_PATH
+}
+
+function set_ruby_version {
+  if [ -f ${BUILD_DIR}/.ruby-version ]; then
+    RUBY_VERSION=$(cat ${BUILD_DIR}/.ruby-version)
+  fi
+}
+
+function download_ruby {
+  VERSION=${RUBY_VERSION:-$DEFAULT_RUBY_VERSION}
+
+  if [ ! -d "$CACHE_DIR/ruby-$VERSION" ]; then
+    echo "-----> Downloading Ruby $VERSION"
+    mkdir -p $CACHE_DIR/ruby-$VERSION
+    ruby_tar="$BASE_URL/ruby-$VERSION.tgz"
+    curl $ruby_tar -s -o - | tar xzf - -C $CACHE_DIR/ruby-$VERSION
+
+    PATH=$CACHE_DIR/ruby-$VERSION/bin:$PATH
+
+    echo "-----> Install dep and gs"
+    gem install dep gs | indent
+  fi
+}
+
+function copy_ruby_to_build_dir {
+  echo "-----> Vendoring Ruby into slug"
+  cp -ru $CACHE_DIR/ruby-$VERSION $BUILD_DIR/ruby
+  PATH=$BUILD_DIR/ruby/bin:$PATH
+}
+
+function install_ruby {
+  download_yaml
+  download_ruby
+  copy_ruby_to_build_dir
+}
+
+function install_gems {
+  echo "-----> Creating gemset"
+  gs init
+
+  echo "-----> Installing gems"
+  gs
+  dep install | indent
+
+  mkdir -p $BUILD_DIR/.profile.d
+  echo "gs" > $BUILD_DIR/.profile.d/gs.sh
+}
+
+set_ruby_version
+install_ruby
+install_gems

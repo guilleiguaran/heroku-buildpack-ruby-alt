@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# this buildpack is valid for Rack apps
+if [ -f $1/config.ru ]; then
+  echo "Ruby"
+  exit 0
+else
+  echo "no"
+  exit 1
+fi
