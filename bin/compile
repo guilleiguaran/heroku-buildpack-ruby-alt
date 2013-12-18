@@ -73,7 +73,7 @@ function install_gems {
   dep install | indent
 
   mkdir -p $BUILD_DIR/.profile.d
-  echo "gs" > $BUILD_DIR/.profile.d/gs.sh
+  echo 'SHELL=$SHELL gs' > $BUILD_DIR/.profile.d/gs.sh
 }
 
 set_ruby_version
