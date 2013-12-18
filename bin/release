@@ -6,5 +6,5 @@ config_vars:
   PATH: /.gs/bin:/app/ruby/bin:bin:/usr/bin:/bin
   RACK_ENV: production
 default_process_types:
-  web: rackup config.ru -p $PORT -e $RACK_ENV
+  web: rackup config.ru -p \$PORT -e \$RACK_ENV
 EOF
