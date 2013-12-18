@@ -3,6 +3,6 @@
 cat << EOF
 ---
 config_vars:
-  PATH: /.gs/bin:bin:/usr/bin:/bin
+  PATH: /.gs/bin:/app/ruby/bin:bin:/usr/bin:/bin
   RACK_ENV: production
 EOF

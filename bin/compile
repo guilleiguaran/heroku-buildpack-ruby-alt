@@ -44,18 +44,12 @@ function download_ruby {
     mkdir -p $CACHE_DIR/ruby-$VERSION
     ruby_tar="$BASE_URL/ruby-$VERSION.tgz"
     curl $ruby_tar -s -o - | tar xzf - -C $CACHE_DIR/ruby-$VERSION
-
-    PATH=$CACHE_DIR/ruby-$VERSION/bin:$PATH
-
-    echo "-----> Install dep and gs"
-    gem install dep gs | indent
   fi
 }
 
 function copy_ruby_to_build_dir {
   echo "-----> Vendoring Ruby into slug"
   cp -ru $CACHE_DIR/ruby-$VERSION $BUILD_DIR/ruby
-  PATH=$BUILD_DIR/ruby/bin:$PATH
 }
 
 function install_ruby {
@@ -65,11 +59,17 @@ function install_ruby {
 }
 
 function install_gems {
+  PATH=$BUILD_DIR/ruby/bin:$PATH
+  cd $BUILD_DIR
+
+  echo "-----> Install dep and gs"
+  gem install dep gs | indent
+
   echo "-----> Creating gemset"
   gs init
+  gs
 
   echo "-----> Installing gems"
-  gs
   dep install | indent
 
   mkdir -p $BUILD_DIR/.profile.d
