@@ -8,10 +8,6 @@ CACHE_DIR=$2
 BASE_URL="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby"
 DEFAULT_RUBY_VERSION="2.0.0-p353"
 
-echo $BUILD_DIR
-echo $CACHE_DIR
-
-
 function indent {
   sed -u 's/^/       /'
 }
@@ -62,9 +58,10 @@ function install_gems {
   PATH=$BUILD_DIR/ruby/bin:$PATH
   cd $BUILD_DIR
   echo "install: --no-ri --no-rdoc --env-shebang" > .gemrc
+  cp .gemrc $HOME
 
   echo "-----> Install dep and gs"
-  gem install dep gs --config-file .gemrc | indent
+  gem install dep gs | indent
 
   echo "-----> Creating gemset"
   gs init
