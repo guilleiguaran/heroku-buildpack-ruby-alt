@@ -63,7 +63,7 @@ function install_gems {
   cd $BUILD_DIR
 
   echo "-----> Install dep and gs"
-  gem install dep gs | indent
+  gem install dep gs --env-shebang | indent
 
   echo "-----> Creating gemset"
   gs init
