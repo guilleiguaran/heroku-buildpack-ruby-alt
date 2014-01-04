@@ -6,7 +6,7 @@ set -e
 BUILD_DIR=$1
 CACHE_DIR=$2
 BASE_URL="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby"
-DEFAULT_RUBY_VERSION="2.0.0-p353"
+DEFAULT_RUBY_VERSION="2.1.0-p0"
 
 function indent {
   sed -u 's/^/       /'
