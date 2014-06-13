@@ -6,7 +6,7 @@ set -e
 BUILD_DIR=$1
 CACHE_DIR=$2
 BASE_URL="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby"
-DEFAULT_RUBY_VERSION="2.1.0-p0"
+DEFAULT_RUBY_VERSION="2.1.2-p95"
 
 function indent {
   sed -u 's/^/       /'
@@ -35,17 +35,17 @@ function set_ruby_version {
 function download_ruby {
   VERSION=${RUBY_VERSION:-$DEFAULT_RUBY_VERSION}
 
-  if [ ! -d "$CACHE_DIR/ruby-$VERSION" ]; then
+  if [ ! -d "$CACHE_DIR/ruby" ]; then
     echo "-----> Downloading Ruby $VERSION"
-    mkdir -p $CACHE_DIR/ruby-$VERSION
+    mkdir -p $CACHE_DIR/ruby
     ruby_tar="$BASE_URL/ruby-$VERSION.tgz"
-    curl $ruby_tar -s -o - | tar xzf - -C $CACHE_DIR/ruby-$VERSION
+    curl $ruby_tar -s -o - | tar xzf - -C $CACHE_DIR/ruby
   fi
 }
 
 function copy_ruby_to_build_dir {
   echo "-----> Vendoring Ruby into slug"
-  cp -ru $CACHE_DIR/ruby-$VERSION $BUILD_DIR/ruby
+  cp -ru $CACHE_DIR/ruby $BUILD_DIR/ruby
 }
 
 function install_ruby {
@@ -55,23 +55,36 @@ function install_ruby {
 }
 
 function install_gems {
-  PATH=$BUILD_DIR/ruby/bin:$PATH
+  PATH=$CACHE_DIR/ruby/bin:$PATH
   cd $BUILD_DIR
   echo "install: --no-ri --no-rdoc --env-shebang" > .gemrc
   cp .gemrc $HOME
 
-  echo "-----> Install dep and gs"
-  gem install dep gs | indent
+  echo "-----> Install dep"
+  gem install dep | indent
 
   echo "-----> Creating gemset"
-  gs init
-  gs
+  if [ ! -d "$CACHE_DIR/.gs" ]; then
+    mkdir -p $CACHE_DIR/.gs
+  fi
+
+  mkdir -p $BUILD_DIR/.profile.d  
+  cat <<-EOF > $BUILD_DIR/.profile.d/gs.sh
+    export GEM_HOME=\$HOME/.gs
+    export GEM_PATH=\$HOME/.gs:$(gem env path | sed "s|$CACHE_DIR|\$HOME|")
+    export PATH=\$HOME/.gs/bin:\$HOME/ruby/bin:bin:/usr/bin:/bin
+    export RACK_ENV=production
+EOF
+
+  HOME=$CACHE_DIR source $BUILD_DIR/.profile.d/gs.sh
+
+  cp $BUILD_DIR/.gems $CACHE_DIR
 
   echo "-----> Installing gems"
+  cd $CACHE_DIR
+  #TODO: use some kind of signal to clear the gem set on user demand by doing a rm -rf $CACHE_DIR/.gs
   dep install | indent
-
-  mkdir -p $BUILD_DIR/.profile.d
-  echo 'SHELL=$SHELL gs' > $BUILD_DIR/.profile.d/gs.sh
+  cp -ru $CACHE_DIR/.gs $BUILD_DIR
 }
 
 set_ruby_version
