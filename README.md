@@ -1,4 +1,4 @@
-# Heroku buildpack: Ruby + gs + dep
+# Heroku buildpack: Ruby + dep
 
 A buildpack to use Ruby (MRI) on Heroku using [dep](https://github.com/cyx/dep/) for
 dependency management. 
