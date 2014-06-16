@@ -1,8 +1,7 @@
-# Heroku buildpack: Ruby + gs + dep
+# Heroku buildpack: Ruby + dep
 
-A buildpack to use Ruby (MRI) on Heroku using [gs](https://github.com/soveran/gs/) and [dep](https://github.com/cyx/dep/) for
+A buildpack to use Ruby (MRI) on Heroku using [dep](https://github.com/cyx/dep/) for
 dependency management. 
-
 
 ## Usage
 
@@ -10,10 +9,9 @@ Just create a Heroku app like this:
 
     heroku create --buildpack https://github.com/guilleiguaran/heroku-buildpack-ruby-alt
 
-
 ## Customization
 
-This uses the last stable version of Ruby available (2.0.0-p353 right
+This uses the last stable version of Ruby available (2.1.2-p95 right
 now), if you want to use another version add a .ruby-version file to 
 your application with the desired version, for example:
 
